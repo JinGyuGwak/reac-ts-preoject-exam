@@ -60,7 +60,7 @@ export default function SingUpPageTsx() {
         </Button>
       </div>
       <div>
-        <Link className="text-muted-foreground hover:underline" to={"/sing-in"}>
+        <Link className="text-muted-foreground hover:underline" to={"/sign-in"}>
           이미 계정이 있다면? 로그인
         </Link>
       </div>

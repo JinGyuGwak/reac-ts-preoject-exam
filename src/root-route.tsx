@@ -24,7 +24,7 @@ export default function RootRoute() {
           <Route path="/" element={<IndexPage />} />
           <Route path="/post/:postId" element={<PostDetailPage />} />
           <Route path="/profile/:userId" element={<ProfileDetailPage />} />
-          <Route path="/reset-passwprd" element={<ResetPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
         <Route path="*" element={<Navigate to={"/"} />} />
       </Route>

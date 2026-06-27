@@ -1,14 +1,17 @@
 import { Button } from "@/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useCreatePost } from "@/hooks/mutations/post/use-create-post";
+import { useOpenAlertModal } from "@/store/alert-modal";
 import { usePostEditorModal } from "@/store/post-editor-modal";
+import { useSession } from "@/store/session";
 import { ImageIcon, XIcon } from "lucide-react";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
-import { Carousel, CarouselContent, CarouselItem } from "../ui/carousel";
-import { createPostWithImages } from "@/api/post";
-import { useSession } from "@/store/session";
-import { useAlertModal, useOpenAlertModal } from "@/store/alert-modal";
 
 type Image = {
   file: File;
@@ -25,7 +28,7 @@ export default function PostEditorModal() {
       close();
     },
     onError: (error) => {
-      toast.error("포스트 생성에 실패했습니다.", {
+      toast.error("포스트 생성에 실패했습니다", {
         position: "top-center",
       });
     },
@@ -37,30 +40,10 @@ export default function PostEditorModal() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height =
-        textareaRef.current.scrollHeight + "px";
-    }
-  }, [content]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      images.forEach((image) => {
-        URL.revokeObjectURL(image.previewUrl);
-      });
-      return;
-    }
-    textareaRef.current?.focus();
-    setContent("");
-    setImages([]);
-  }, [isOpen]);
-
   const handleCloseModal = () => {
     if (content !== "" || images.length !== 0) {
       openAlertModal({
-        title: "게시글 작성이 마무리 되지 않았습니다.",
+        title: "게시글 작성이 마무리 되지 않았습니다",
         description: "이 화면에서 나가면 작성중이던 내용이 사라집니다.",
         onPositive: () => {
           close();
@@ -74,7 +57,7 @@ export default function PostEditorModal() {
 
   const handleCreatePostClick = () => {
     if (content.trim() === "") return;
-    createPostWithImages({
+    createPost({
       content,
       images: images.map((image) => image.file),
       userId: session!.user.id,
@@ -84,15 +67,15 @@ export default function PostEditorModal() {
   const handleSelectImages = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
+
       files.forEach((file) => {
-        {
-          setImages((prev) => [
-            ...prev,
-            { file, previewUrl: URL.createObjectURL(file) },
-          ]);
-        }
+        setImages((prev) => [
+          ...prev,
+          { file, previewUrl: URL.createObjectURL(file) },
+        ]);
       });
     }
+
     e.target.value = "";
   };
 
@@ -100,9 +83,22 @@ export default function PostEditorModal() {
     setImages((prevImages) =>
       prevImages.filter((item) => item.previewUrl !== image.previewUrl),
     );
-
-    URL.revokeObjectURL(image.previewUrl);
   };
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + "px";
+    }
+  }, [content]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    textareaRef.current?.focus();
+    setContent("");
+    setImages([]);
+  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleCloseModal}>
@@ -157,7 +153,11 @@ export default function PostEditorModal() {
           <ImageIcon />
           이미지 추가
         </Button>
-        <Button onClick={handleCreatePostClick} className="cursor-pointer">
+        <Button
+          disabled={isCreatePostPending}
+          onClick={handleCreatePostClick}
+          className="cursor-pointer"
+        >
           저장
         </Button>
       </DialogContent>

@@ -2,12 +2,23 @@ import supabase from "@/lib/supabase";
 import { uploadImage } from "./image";
 import type { PostEntity } from "@/types";
 
-export async function fetchPosts({ from, to }: { from: number; to: number }) {
-  const { data, error } = await supabase
+export async function fetchPosts({
+  from,
+  to,
+  authorId,
+}: {
+  from: number;
+  to: number;
+  authorId?: string;
+}) {
+  const request = supabase
     .from("post")
     .select("*, author: profile!author_id (*)")
     .order("created_at", { ascending: false })
     .range(from, to);
+
+  if (authorId) request.eq("author_id", authorId);
+  const { data, error } = await request;
 
   if (error) throw error;
   return data;
